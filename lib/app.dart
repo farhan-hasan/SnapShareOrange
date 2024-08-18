@@ -21,7 +21,7 @@ class SnapShare extends StatelessWidget {
         color: Color(0xff101828),
         fontFamily: "Satoshi"),
     bodySmall: TextStyle(
-        fontSize: 16.0,
+        fontSize: 14.0,
         fontWeight: FontWeight.normal,
         color: Color(0xff101828),
         fontFamily: "Satoshi"),
@@ -53,6 +53,26 @@ class SnapShare extends StatelessWidget {
   final InputDecorationTheme lightInputDecorationTheme = InputDecorationTheme(
     filled: true,
     fillColor: Colors.white,
+    hintStyle: const TextStyle(
+        color: Color(0xff98A2B3), fontSize: 14, fontWeight: FontWeight.w400),
+    labelStyle: const TextStyle(
+        color: Color(0xff98A2B3), fontSize: 14, fontWeight: FontWeight.w400),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12.0),
+      borderSide: const BorderSide(color: Color(0xff6993FF)),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12.0),
+      borderSide: const BorderSide(color: Color(0xff6993FF)),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12.0),
+      borderSide: const BorderSide(color: Color(0xff6993FF)),
+    ),
+  );
+  final InputDecorationTheme darkInputDecorationTheme = InputDecorationTheme(
+    filled: true,
+    fillColor: const Color(0xff101828),
     hintStyle: const TextStyle(
         color: Color(0xff98A2B3), fontSize: 14, fontWeight: FontWeight.w400),
     labelStyle: const TextStyle(
@@ -118,10 +138,11 @@ class SnapShare extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ))),
           textTheme: darkTextTheme,
-          iconTheme: const IconThemeData(color: Colors.white, size: 24)
+          iconTheme: const IconThemeData(color: Colors.white, size: 24),
+          inputDecorationTheme: darkInputDecorationTheme,
           // useMaterial3: true,
           ),
-      themeMode: ThemeMode.light,
+      themeMode: ThemeMode.dark,
       home: const Test(),
     );
   }
