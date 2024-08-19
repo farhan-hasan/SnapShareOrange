@@ -1,4 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:snap_share_orange/data/services/fire_base_auth.dart';
+import 'package:snap_share_orange/presentation/screens/auth_screen/auth_screen.dart';
 
 class SnapShare extends StatelessWidget {
   const SnapShare({super.key});
@@ -11,8 +14,17 @@ class SnapShare extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      home: _getInitialScreen(),
     );
+  }
+
+  Widget _getInitialScreen() {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      return const HomePage();
+    } else {
+      return const AuthScreen();
+    }
   }
 }
 
@@ -24,6 +36,18 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("SnapShare"),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await FireBaseAuth.signOutInEmailAndPassword();
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AuthScreen()),
+                  (context) => false);
+            },
+            icon: const Icon(Icons.logout),
+          )
+        ],
       ),
       body: const Center(
         child: Text("Home"),
