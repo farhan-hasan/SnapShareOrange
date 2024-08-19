@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:snap_share_orange/test.dart';
+import 'package:snap_share_orange/data/services/fire_base_auth.dart';
+import 'package:snap_share_orange/presentation/screens/auth_screen/auth_screen.dart';
 
 class SnapShare extends StatelessWidget {
   SnapShare({super.key});
@@ -119,31 +120,7 @@ class SnapShare extends StatelessWidget {
         inputDecorationTheme: lightInputDecorationTheme,
         //  useMaterial3: true,
       ),
-      darkTheme: ThemeData(
-          scaffoldBackgroundColor: const Color(0xff101828),
-          primaryColor: const Color(0xff101828),
-          appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xff1D2939),
-              titleTextStyle: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white)),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: const Color(0xff4478FF),
-                  textStyle: const TextStyle(
-                    fontFamily: "Satoshi",
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ))),
-          textTheme: darkTextTheme,
-          iconTheme: const IconThemeData(color: Colors.white, size: 24),
-          inputDecorationTheme: darkInputDecorationTheme,
-          // useMaterial3: true,
-          ),
-      themeMode: ThemeMode.dark,
-      home: const Test(),
+      home: const HomePage(),
     );
   }
 }
@@ -156,6 +133,18 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("SnapShare"),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await FireBaseAuth.signOutInEmailAndPassword();
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AuthScreen()),
+                  (context) => false);
+            },
+            icon: const Icon(Icons.logout),
+          )
+        ],
       ),
       body: const Center(
         child: Text("Home"),
