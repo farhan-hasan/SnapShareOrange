@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:snap_share_orange/data/services/fire_base_auth.dart';
 import 'package:snap_share_orange/presentation/screens/auth_screen/auth_screen.dart';
+import 'package:snap_share_orange/presentation/screens/auth_screen/log_in_screen.dart';
+import 'package:snap_share_orange/presentation/screens/auth_screen/sign_up_screen.dart';
+import 'package:snap_share_orange/presentation/screens/main_bottom_nav_bar_screen.dart';
+import 'package:snap_share_orange/presentation/screens/user_profile_screen.dart';
 
 class SnapShare extends StatelessWidget {
   SnapShare({super.key});
@@ -120,7 +124,7 @@ class SnapShare extends StatelessWidget {
         inputDecorationTheme: lightInputDecorationTheme,
         //  useMaterial3: true,
       ),
-      home: const HomePage(),
+      home: const LogInScreen(),
     );
   }
 }

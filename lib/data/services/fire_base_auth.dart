@@ -10,7 +10,7 @@ class FireBaseAuth {
     String userId = userCredential.user!.uid;
 
     UserInfoModel userInfo =
-        UserInfoModel(id: userId, name: name, email: email);
+        UserInfoModel(id: userId, name: name, email: email,followers: 0,following: 0);
 
     await Database.addUserDetails(userInfo, userId);
   }
