@@ -124,7 +124,7 @@ class SnapShare extends StatelessWidget {
         inputDecorationTheme: lightInputDecorationTheme,
         //  useMaterial3: true,
       ),
-      home: const MainBottomNavBarScreen(),
+      home: const LogInScreen(),
     );
   }
 }
