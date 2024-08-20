@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:snap_share_orange/app.dart';
+import 'package:snap_share_orange/presentation/screens/user_profile_screen.dart';
 
 class MainBottomNavBarScreen extends StatefulWidget {
   const MainBottomNavBarScreen({super.key});
@@ -15,7 +16,7 @@ class _MainBottomNavBarScreenState extends State<MainBottomNavBarScreen> {
     const HomePage(),
     Container(),
     Container(),
-    Container(),
+    const UserProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
