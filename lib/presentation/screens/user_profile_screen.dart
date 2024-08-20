@@ -1,8 +1,10 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:snap_share_orange/data/models/user_posts_model.dart';
 import 'package:snap_share_orange/data/services/database.dart';
 import 'package:snap_share_orange/presentation/widgets/scaffold_message.dart';
@@ -18,10 +20,15 @@ class UserProfileScreen extends StatefulWidget {
 }
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
+  File? _image;
+  String? _imageUrl;
+  final ImagePicker _picker = ImagePicker();
   late List<UserInfoModel> userDetails;
   late List<UserPostsModel> userPosts;
-  UserInfoModel currentUserDetail = UserInfoModel(id: "id", name: "name", email: "email", followers: 0, following: 0);
-  bool isLoading = false;
+  UserInfoModel currentUserDetail = UserInfoModel(
+      id: "id", name: "name", email: "email", followers: 0, following: 0);
+  bool isLoading = false, isProfilePictureLoading = false;
+  String? profileImageUrl, tempImageUrl;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
@@ -30,34 +37,100 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     super.initState();
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final pickedFile = await _picker.pickImage(source: source);
+      if (pickedFile != null) {
+        setState(() {
+          _image = File(pickedFile.path);
+          tempImageUrl = profileImageUrl;
+          profileImageUrl = null;
+        });
+        await _uploadImageToFirebase();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessage.showScafflodMessage(
+            context, 'Error picking image: $e', Colors.blueAccent);
+      }
+      setState(() {
+        profileImageUrl = tempImageUrl;
+      });
+    }
+  }
+
+  Future<void> _uploadImageToFirebase() async {
+    try {
+      if (_image != null) {
+        String fileName = '${Utils.userId}';
+
+        final ref = FirebaseStorage.instance.ref().child(fileName);
+
+        await ref.putFile(_image!);
+
+        String url = await ref.getDownloadURL();
+
+        setState(() {
+          profileImageUrl = url;
+        });
+        if (mounted) {
+          ScaffoldMessage.showScafflodMessage(
+              context, 'profile image updated successfully', Colors.blueAccent);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessage.showScafflodMessage(
+            context, 'Error uploading image: $e', Colors.blueAccent);
+      }
+      setState(() {
+        profileImageUrl = tempImageUrl;
+      });
+    }
+  }
+
   Future<void> fetchProfileData() async {
     isLoading = true;
     setState(() {});
     await getUserDetails();
     await getUserPosts();
+    await getProfileImage();
     isLoading = false;
     setState(() {});
   }
 
-  Future<void> getUserDetails() async {
+  Future<void> getProfileImage() async {
+    try {
+      final ref = FirebaseStorage.instance.ref().child('${Utils.userId}');
+      final url = await ref.getDownloadURL();
+      setState(() {
+        profileImageUrl = url;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessage.showScafflodMessage(
+            context, 'Failed to load profile image: $e', Colors.blueAccent);
+      }
+    }
+  }
 
+  Future<void> getUserDetails() async {
     QuerySnapshot querySnapshot = await _firestore
         .collection('users')
         .where('id', isEqualTo: Utils.userId)
         .limit(1)
         .get();
     if (querySnapshot.docs.isEmpty) {
-      if(mounted) {
-        ScaffoldMessage.showScafflodMessage(
-            context, 'No document found for the logged-in user.',
-            Colors.blueAccent);
+      if (mounted) {
+        ScaffoldMessage.showScafflodMessage(context,
+            'No document found for the logged-in user.', Colors.blueAccent);
       }
       return;
     }
 
     userDetails = await Database.getAllUserDetails();
-    for(UserInfoModel detail in userDetails) {
-      if(detail.id == Utils.userId) {
+    for (UserInfoModel detail in userDetails) {
+      if (detail.id == Utils.userId) {
         currentUserDetail = detail;
         return;
       }
@@ -66,118 +139,121 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   Future<void> getUserPosts() async {
     QuerySnapshot<Map<String, dynamic>> snapshot = await _firestore
-        .collection('users') // Parent collection
-        .doc(Utils.userId) // Document ID
-        .collection('posts') // Subcollection
-        .orderBy('date', descending: true) // Optional: order by timestamp
+        .collection('users')
+        .doc(Utils.userId)
+        .collection('posts')
+        .orderBy('date', descending: true)
         .get();
     userPosts = snapshot.docs.map((doc) {
       return UserPostsModel.fromMap(doc.data());
     }).toList();
 
-    for(UserPostsModel model in userPosts) {
+    for (UserPostsModel model in userPosts) {
       log(model.caption);
       log(model.location);
       log(model.date.toString());
       log(model.likes.toString());
     }
-
   }
 
   @override
   Widget build(BuildContext context) {
-
     final textTheme = Theme.of(context).textTheme;
-    return
-      isLoading ? const Center(child: CircularProgressIndicator(),) :
-      DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text("My Profile"),
-          centerTitle: true,
-        ),
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              children: [
-                buildProfileSection(textTheme),
-                buildPostsSection(textTheme),
-              ],
+    return isLoading
+        ? const Center(
+            child: CircularProgressIndicator(),
+          )
+        : DefaultTabController(
+            length: 2,
+            child: Scaffold(
+              appBar: AppBar(
+                title: const Text("My Profile"),
+                centerTitle: true,
+              ),
+              body: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    children: [
+                      buildProfileSection(textTheme, profileImageUrl),
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      buildPostsSection(textTheme),
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
-      ),
-    );
+          );
   }
 
   Widget buildPostsSection(TextTheme textTheme) {
     return Column(
-                children: [
-                  TabBar(
-                    padding: const EdgeInsets.only(left: 40, right: 40),
-                    indicatorColor: Colors.black,
-                    labelColor: Colors.black,
-                    labelStyle: textTheme.titleSmall,
-                    tabs: <Widget>[
-                      Tab(
-                        child: Wrap(children: [
-                          const Icon(Icons.grid_view),
-                          const SizedBox(
-                            width: 4,
-                          ),
-                          Text(
-                            "Grid view",
-                            style: textTheme.titleSmall,
-                          ),
-                        ]),
-                      ),
-                      Tab(
-                        child: Wrap(children: [
-                          const Icon(Icons.list_alt_outlined),
-                          const SizedBox(
-                            width: 4,
-                          ),
-                          Text(
-                            "List view",
-                            style: textTheme.titleSmall,
-                          ),
-                        ]),
-                      )
-                    ],
-                  ),
-                  SizedBox(
-                    height: 630,
-                    child: TabBarView(
-                      children: [
-                        buildGridView(textTheme),
-                        buildListView(textTheme),
-                      ],
-                    ),
-                  )
-                ],
-              );
+      children: [
+        TabBar(
+          padding: const EdgeInsets.only(left: 40, right: 40),
+          indicatorColor: Colors.black,
+          labelColor: Colors.black,
+          labelStyle: textTheme.titleSmall,
+          tabs: <Widget>[
+            Tab(
+              child: Wrap(children: [
+                const Icon(Icons.grid_view),
+                const SizedBox(
+                  width: 4,
+                ),
+                Text(
+                  "Grid view",
+                  style: textTheme.titleSmall,
+                ),
+              ]),
+            ),
+            Tab(
+              child: Wrap(children: [
+                const Icon(Icons.list_alt_outlined),
+                const SizedBox(
+                  width: 4,
+                ),
+                Text(
+                  "List view",
+                  style: textTheme.titleSmall,
+                ),
+              ]),
+            )
+          ],
+        ),
+        SizedBox(
+          height: 630,
+          child: TabBarView(
+            children: [
+              buildGridView(textTheme),
+              buildListView(textTheme),
+            ],
+          ),
+        )
+      ],
+    );
   }
 
   Widget buildListView(TextTheme textTheme) {
     return ListView.builder(
-                          itemCount: userPosts.length,
-                          itemBuilder: (context, index) {
-                            return SizedBox(
-                              height: 100,
-                              child: Card(
-                                color: Colors.white,
-                                child: Center(
-                                  child: Text(
-                                    userPosts[index].caption,
-                                    style: textTheme.titleLarge,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        );
+      itemCount: userPosts.length,
+      itemBuilder: (context, index) {
+        return SizedBox(
+          height: 100,
+          child: Card(
+            color: Colors.white,
+            child: Center(
+              child: Text(
+                userPosts[index].caption,
+                style: textTheme.titleLarge,
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Widget buildGridView(TextTheme textTheme) {
@@ -204,15 +280,22 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget buildProfileSection(TextTheme textTheme) {
+  Widget buildProfileSection(TextTheme textTheme, String? profileImageUrl) {
     return Wrap(
       children: [
-        const CircleAvatar(
-          radius: 40,
-          backgroundColor: Colors.white,
-          child: Icon(
-            Icons.person,
-            size: 60,
+        GestureDetector(
+          onTap: () async {
+            await _pickImage(ImageSource.gallery);
+          },
+          child: CircleAvatar(
+            radius: 40,
+            backgroundColor: Colors.white,
+            child: profileImageUrl == null
+                ? const CircularProgressIndicator()
+                : CircleAvatar(
+                    radius: 50,
+                    backgroundImage: NetworkImage(profileImageUrl),
+                  ),
           ),
         ),
         const SizedBox(
