@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:snap_share_orange/data/services/fire_base_auth.dart';
@@ -33,12 +34,11 @@ class LogInScreenController extends GetxController {
       } else {
         errorMessage = 'Login Failed: ${e.message}';
       }
-      Get.snackbar('Login Failed', errorMessage,
-          backgroundColor: Colors.redAccent, colorText: Colors.white);
+
+      ScaffoldMessage.showScafflodMessage(errorMessage, Colors.redAccent);
     } catch (e) {
       print("Login Failed: ${e.toString()}");
-      Get.snackbar('Login Failed', 'An unexpected error occurred',
-          backgroundColor: Colors.redAccent, colorText: Colors.white);
+      ScaffoldMessage.showScafflodMessage('Login Failed', Colors.redAccent);
     } finally {
       _inProgress = false;
       update();
