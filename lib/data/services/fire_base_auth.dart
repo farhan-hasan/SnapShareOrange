@@ -9,9 +9,8 @@ class FireBaseAuth {
         .createUserWithEmailAndPassword(email: email, password: password);
     String userId = userCredential.user!.uid;
 
-    UserInfoModel userInfo =
-        UserInfoModel(id: userId, name: name, email: email,followers: 0,following: 0);
-
+    UserInfoModel userInfo = UserInfoModel(
+        id: userId, name: name, email: email, followers: 0, following: 0);
     await Database.addUserDetails(userInfo, userId);
   }
 
@@ -23,5 +22,9 @@ class FireBaseAuth {
 
   static Future<void> signOutInEmailAndPassword() async {
     await FirebaseAuth.instance.signOut();
+  }
+
+  static Future<void> sendPasswordResetEmail(String email) async {
+    await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
   }
 }

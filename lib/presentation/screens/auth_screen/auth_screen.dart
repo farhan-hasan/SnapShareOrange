@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:snap_share_orange/presentation/screens/auth_screen/log_in_screen.dart';
 import 'package:snap_share_orange/presentation/screens/auth_screen/sign_up_screen.dart';
 import 'package:snap_share_orange/presentation/widgets/custom_elevated_button.dart';
@@ -22,8 +23,7 @@ class AuthScreen extends StatelessWidget {
           ),
           CustomElevatedButton(
             onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const SignUpScreen()));
+              Get.to(() => const SignUpScreen());
             },
             child: const Text(
               "Create Account",
@@ -35,8 +35,7 @@ class AuthScreen extends StatelessWidget {
           ),
           InkWell(
             onTap: () {
-              Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const LogInScreen()));
+              Get.to(() => const LogInScreen());
             },
             child: const Text(
               "Log In",
