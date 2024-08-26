@@ -1,6 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:snap_share_orange/data/services/fire_base_auth.dart';
+import 'package:get/get.dart';
+import 'package:snap_share_orange/controller_binder.dart';
 import 'package:snap_share_orange/presentation/screens/auth_screen/auth_screen.dart';
+import 'package:snap_share_orange/presentation/screens/main_bottom_nav_bar_screen.dart';
 
 class SnapShare extends StatelessWidget {
   SnapShare({super.key});
@@ -94,61 +97,23 @@ class SnapShare extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        scaffoldBackgroundColor: Colors.white,
-        primaryColor: Colors.white,
-        appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.white,
-            titleTextStyle: TextStyle(
-                fontFamily: "Satoshi",
-                fontSize: 20.0,
-                fontWeight: FontWeight.w700,
-                color: Color(0xff101828))),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: const Color(0xff4478FF),
-                textStyle: const TextStyle(
-                  fontFamily: "Satoshi",
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ))),
-        textTheme: lightTextTheme,
-        iconTheme: const IconThemeData(color: Color(0xFF101828), size: 24),
-        inputDecorationTheme: lightInputDecorationTheme,
-        //  useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
       ),
-      home: const HomePage(),
+      home: _getInitialScreen(),
+      initialBinding: ControllerBinder(),
     );
   }
-}
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("SnapShare"),
-        actions: [
-          IconButton(
-            onPressed: () async {
-              await FireBaseAuth.signOutInEmailAndPassword();
-              Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AuthScreen()),
-                  (context) => false);
-            },
-            icon: const Icon(Icons.logout),
-          )
-        ],
-      ),
-      body: const Center(
-        child: Text("Home"),
-      ),
-    );
+  Widget _getInitialScreen() {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      return const MainBottomNavBarScreen();
+    } else {
+      return const AuthScreen();
+    }
   }
 }
