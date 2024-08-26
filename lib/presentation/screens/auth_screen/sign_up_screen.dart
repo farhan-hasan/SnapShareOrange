@@ -1,9 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:snap_share_orange/data/services/fire_base_auth.dart';
-import 'package:snap_share_orange/presentation/screens/auth_screen/log_in_screen.dart';
+import 'package:get/get.dart';
+import 'package:snap_share_orange/presentation/state_holders/sign_up_screen_controller.dart';
 import 'package:snap_share_orange/presentation/widgets/custom_elevated_button.dart';
-import 'package:snap_share_orange/presentation/widgets/scaffold_message.dart';
 import 'package:snap_share_orange/presentation/widgets/text_validator.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -14,46 +12,10 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _LogInScreenState extends State<SignUpScreen> {
-  bool _passwordVisible = false;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameTEController = TextEditingController();
   final TextEditingController _emailTEController = TextEditingController();
   final TextEditingController _passwordTEController = TextEditingController();
-
-  bool _isLoading = false;
-
-  Future<void> _createUserSignUpDatabase(
-      String email, String password, String name) async {
-    try {
-      _isLoading = true;
-      setState(() {});
-      await FireBaseAuth.createUserWithEmailAndPassword(email, password, name);
-      await FireBaseAuth.signOutInEmailAndPassword();
-      if (mounted) {
-        ScaffoldMessage.showScafflodMessage(
-            context, 'User Sign-Up Success', Colors.blueAccent);
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const LogInScreen()));
-      }
-    } on FirebaseException catch (e) {
-      if (e.code == 'email-already-in-use') {
-        if (mounted) {
-          ScaffoldMessage.showScafflodMessage(
-              context, 'Email is already in use', Colors.redAccent);
-        }
-      } else if (e.code == 'weak-password') {
-        if (mounted) {
-          ScaffoldMessage.showScafflodMessage(
-              context, 'The password is too weak', Colors.redAccent);
-        }
-      }
-    } catch (e) {
-      print("Sign-Up Failed: ${e.toString()}");
-    } finally {
-      _isLoading = false;
-      setState(() {});
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,59 +23,64 @@ class _LogInScreenState extends State<SignUpScreen> {
       appBar: AppBar(
         automaticallyImplyLeading: true,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 20, right: 20, top: 30),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Inter your Name, Email and Password",
-                  style: TextStyle(fontSize: 20, color: Colors.black),
-                ),
-                const SizedBox(
-                  height: 30,
-                ),
-                const Text("Name"),
-                const SizedBox(
-                  height: 5,
-                ),
-                _buildNameForm(),
-                const Text("Email"),
-                const SizedBox(
-                  height: 5,
-                ),
-                _buildEmailForm(),
-                const Text("Password"),
-                const SizedBox(
-                  height: 5,
-                ),
-                _buildPasswordForm(),
-                const SizedBox(
-                  height: 30,
-                ),
-                _buildSignUpButton()
-              ],
+      body:
+          GetBuilder<SignUpScreenController>(builder: (signUpScreenController) {
+        return SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 20, right: 20, top: 30),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Inter your Name, Email and Password",
+                    style: TextStyle(fontSize: 20, color: Colors.black),
+                  ),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  const Text("Name"),
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  _buildNameForm(),
+                  const Text("Email"),
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  _buildEmailForm(),
+                  const Text("Password"),
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  _buildPasswordForm(signUpScreenController),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  _buildSignUpButton(signUpScreenController)
+                ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 
-  Widget _buildSignUpButton() {
+  Widget _buildSignUpButton(SignUpScreenController signUpController) {
     return CustomElevatedButton(
-      onPressed: _isLoading
+      onPressed: signUpController.isLoading
           ? null
           : () async {
               if (_formKey.currentState!.validate()) {
-                await _createUserSignUpDatabase(_emailTEController.text,
-                    _passwordTEController.text, _nameTEController.text);
+                await signUpController.createUserSignUpDatabase(
+                    _emailTEController.text,
+                    _passwordTEController.text,
+                    _nameTEController.text);
               }
             },
-      child: _isLoading
+      child: signUpController.isLoading
           ? const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             )
@@ -124,29 +91,30 @@ class _LogInScreenState extends State<SignUpScreen> {
     );
   }
 
-  Widget _buildPasswordForm() {
+  Widget _buildPasswordForm(SignUpScreenController signUpController) {
     return SizedBox(
       height: 60,
       child: TextFormField(
         controller: _passwordTEController,
-        obscureText: !_passwordVisible,
+        obscureText: !signUpController.passwordVisible,
         validator: (value) => TextValidator.passwordValidator(value),
         decoration: InputDecoration(
           hintText: 'Input Password',
           prefixIcon: const Icon(Icons.lock),
           suffix: IconButton(
             onPressed: () {
-              _tooglePasswordVisible();
+              signUpController.tooglePasswordVisible();
             },
-            icon: Icon(
-                _passwordVisible ? Icons.visibility : Icons.visibility_off),
+            icon: Icon(signUpController.passwordVisible
+                ? Icons.visibility
+                : Icons.visibility_off),
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
           ),
         ),
         onChanged: (value) {
-          setState(() {});
+          signUpController.onChangedValue();
         },
       ),
     );
@@ -184,10 +152,5 @@ class _LogInScreenState extends State<SignUpScreen> {
         validator: (value) => TextValidator.textValidator(value),
       ),
     );
-  }
-
-  void _tooglePasswordVisible() {
-    _passwordVisible = !_passwordVisible;
-    setState(() {});
   }
 }
