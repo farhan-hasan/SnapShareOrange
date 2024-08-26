@@ -1,12 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:snap_share_orange/controller_binder.dart';
-import 'package:snap_share_orange/data/services/fire_base_auth.dart';
 import 'package:snap_share_orange/presentation/screens/auth_screen/auth_screen.dart';
-import 'package:snap_share_orange/presentation/screens/auth_screen/log_in_screen.dart';
-import 'package:snap_share_orange/presentation/screens/auth_screen/sign_up_screen.dart';
 import 'package:snap_share_orange/presentation/screens/main_bottom_nav_bar_screen.dart';
-import 'package:snap_share_orange/presentation/screens/user_profile_screen.dart';
 
 class SnapShare extends StatelessWidget {
   SnapShare({super.key});
@@ -107,41 +104,16 @@ class SnapShare extends StatelessWidget {
         useMaterial3: true,
       ),
       home: _getInitialScreen(),
+      initialBinding: ControllerBinder(),
     );
   }
 
   Widget _getInitialScreen() {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      return const HomePage();
+      return const MainBottomNavBarScreen();
     } else {
       return const AuthScreen();
     }
-  }
-}
-
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("SnapShare"),
-        actions: [
-          IconButton(
-            onPressed: () async {
-              await FireBaseAuth.signOutInEmailAndPassword();
-
-              Get.offAll(() => const AuthScreen());
-            },
-            icon: const Icon(Icons.logout),
-          )
-        ],
-      ),
-      body: const Center(
-        child: Text("Home"),
-      ),
-    );
   }
 }

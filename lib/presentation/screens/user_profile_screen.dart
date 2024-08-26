@@ -51,7 +51,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessage.showScafflodMessage(
-            context, 'Error picking image: $e', Colors.blueAccent);
+            'Error picking image: $e', Colors.blueAccent);
       }
       setState(() {
         profileImageUrl = tempImageUrl;
@@ -62,7 +62,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Future<void> _uploadImageToFirebase() async {
     try {
       if (_image != null) {
-        String fileName = '${Utils.userId}';
+        String fileName = Utils.userId;
 
         final ref = FirebaseStorage.instance.ref().child(fileName);
 
@@ -75,13 +75,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         });
         if (mounted) {
           ScaffoldMessage.showScafflodMessage(
-              context, 'profile image updated successfully', Colors.blueAccent);
+              'profile image updated successfully', Colors.blueAccent);
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessage.showScafflodMessage(
-            context, 'Error uploading image: $e', Colors.blueAccent);
+            'Error uploading image: $e', Colors.blueAccent);
       }
       setState(() {
         profileImageUrl = tempImageUrl;
@@ -101,7 +101,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   Future<void> getProfileImage() async {
     try {
-      final ref = FirebaseStorage.instance.ref().child('${Utils.userId}');
+      final ref = FirebaseStorage.instance.ref().child(Utils.userId);
       final url = await ref.getDownloadURL();
       setState(() {
         profileImageUrl = url;
@@ -109,7 +109,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessage.showScafflodMessage(
-            context, 'Failed to load profile image: $e', Colors.blueAccent);
+            'Failed to load profile image: $e', Colors.blueAccent);
       }
     }
   }
@@ -122,7 +122,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         .get();
     if (querySnapshot.docs.isEmpty) {
       if (mounted) {
-        ScaffoldMessage.showScafflodMessage(context,
+        ScaffoldMessage.showScafflodMessage(
             'No document found for the logged-in user.', Colors.blueAccent);
       }
       return;
