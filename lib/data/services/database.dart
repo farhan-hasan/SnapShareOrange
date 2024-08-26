@@ -16,4 +16,5 @@ class Database {
       return UserInfoModel.fromMap(doc.data());
     }).toList();
   }
+
 }
