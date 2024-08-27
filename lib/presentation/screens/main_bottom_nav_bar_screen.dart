@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:snap_share_orange/presentation/screens/search_screen.dart';
 import 'package:snap_share_orange/presentation/screens/snap_share_home_screen.dart';
 import 'package:snap_share_orange/presentation/screens/user_profile_screen.dart';
 import 'package:snap_share_orange/presentation/state_holders/main_bottom_nav_controller.dart';
@@ -14,7 +15,7 @@ class MainBottomNavBarScreen extends StatefulWidget {
 class _MainBottomNavBarScreenState extends State<MainBottomNavBarScreen> {
   final List<Widget> _screens = [
     const HomePage(),
-    Container(),
+    const SearchScreen(),
     Container(),
     const UserProfileScreen(),
   ];
