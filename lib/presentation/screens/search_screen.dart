@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:snap_share_orange/presentation/state_holders/search_result_controller.dart';
+import 'package:snap_share_orange/presentation/widgets/search_box.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -27,7 +28,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: _buildSearchTextField(),),
+      appBar: AppBar(title: SearchBox(controller: _searchTEController,),),
       body: StreamBuilder<List<String>>(
         stream: _searchResultController.imagesStream,
         builder: (context, snapshot) {
@@ -67,24 +68,6 @@ class _SearchScreenState extends State<SearchScreen> {
             );
           });
         },
-      ),
-    );
-  }
-  Widget _buildSearchTextField() {
-    return TextFormField(
-      controller: _searchTEController,
-      decoration: InputDecoration(
-        hintText: 'Search',
-        prefixIcon: const Icon(Icons.search_outlined),
-        contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-        enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.cyan),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.cyan),
-          borderRadius: BorderRadius.circular(8),
-        ),
       ),
     );
   }
